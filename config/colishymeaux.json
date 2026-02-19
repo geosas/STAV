@@ -1,0 +1,6 @@
+{
+    "urlService": "https://frost.geosas.fr/colishymeaux/v1.1/",
+    "serviceName": "CoLiSHyM'Eaux",
+    "mode": "Frost_Geosas",
+    "description": "Projet CoLiSHyM'Eaux : Instrumentation du marais normand"
+}

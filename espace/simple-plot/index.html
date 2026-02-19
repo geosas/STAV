@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="icon" type="image/png" sizes="16x16" href="../../img/icon.png" />
+    <title>STAV</title>
+
+    <link rel="stylesheet" href="../../css/bulma.min.css" />
+    <link rel="stylesheet" href="../../css/marker.css" />
+    <link rel="stylesheet" href="../../css/materialdesignicons.min.css" />
+
+    <script type="text/javascript" src="../../js/lib/dygraph.min.js"></script>
+    <link rel="stylesheet" type="text/css" href="../../css/dygraph.min.css" />
+    <link rel="stylesheet" href="../../css/stav.css" />
+  </head>
+
+  <body>
+    <div id="header"></div>
+    <div class="">
+      <div style="display: flex; align-items: center; padding: 4px 8px">
+        <button id="btn_dl" class="button is-small" style="margin-right: 4px">
+          📥 Téléchargement
+        </button>
+        <progress
+          id="progressBar"
+          class="progress is-large is-info"
+          max="100"
+          style="flex: 1"
+        >
+          0%
+        </progress>
+        <div
+          id="paginationControls"
+          class="buttons has-addons"
+          style="display: none; margin-bottom: 0; margin-left: 8px"
+        >
+          <button id="btn_prev_page" class="button is-small">◀</button>
+          <span
+            id="pageIndicator"
+            class="button is-small is-static"
+            style="cursor: pointer; pointer-events: auto"
+            >1 / 1</span
+          >
+          <button id="btn_next_page" class="button is-small">▶</button>
+        </div>
+        <button
+          id="btn_zomm"
+          class="button is-small"
+          style="visibility: hidden; margin-left: 8px"
+        >
+          Dézommer
+        </button>
+        <button id="btn_share" class="button is-small" style="margin-left: 4px">
+          🔗 Partager
+        </button>
+      </div>
+      <div id="graphDiv" style="width: 95%; height: 80vh"></div>
+      <div id="customLegend"></div>
+    </div>
+    <script type="module" src="../../js/simple-plot.js"></script>
+  </body>
+</html>

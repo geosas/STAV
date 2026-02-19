@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="icon" type="image/png" sizes="16x16" href="../../img/icon.png" />
+    <title>STAV</title>
+
+    <link rel="stylesheet" href="../../css/bulma.min.css" />
+    <link rel="stylesheet" href="../../css/marker.css" />
+    <link rel="stylesheet" href="../../css/materialdesignicons.min.css" />
+
+    <script src="../../js/lib/ol.js"></script>
+    <link rel="stylesheet" href="../../css/ol.css" />
+
+    <script type="text/javascript" src="../../js/lib/dygraph.min.js"></script>
+    <link rel="stylesheet" type="text/css" href="../../css/dygraph.min.css" />
+    <link rel="stylesheet" href="../../css/stav.css" />
+  </head>
+
+  <body>
+    <div id="header"></div>
+
+    <div class="columns">
+      <div class="column is-three-fifths">
+        <h3 class="title is-3" id="serviceName"></h3>
+        <div class="columns">
+          <div class="column">
+            <div class="field">
+              <label class="label">1. Filtrer par capteur</label>
+              <div class="control">
+                <input
+                  type="text"
+                  id="searchDescriptionInput"
+                  placeholder="OTT ou DIVER.."
+                  class="input is-info"
+                  style="margin-bottom: 10px"
+                />
+              </div>
+            </div>
+          </div>
+          <div class="column">
+            <div class="field">
+              <label class="label"
+                >2. Filtrer par point de mesure/variable:</label
+              >
+              <div class="control">
+                <input
+                  type="text"
+                  id="searchInput"
+                  placeholder="Exemple ST1 ou Humidité...  (colonne Name)"
+                  class="input is-info"
+                  style="margin-bottom: 10px"
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+        <div id="table_sensor" style="overflow-y: auto; height: 100pc"></div>
+      </div>
+      <div class="column fixed-column" id="columnGraph">
+        <button
+          class="delete is-large"
+          id="closeGraphOverlay"
+          style="display: none"
+          aria-label="Fermer"
+        ></button>
+        <h3 class="title is-3"></h3>
+        <div id="graphDiv" style="width: 95%; height: 400px"></div>
+        <label class="checkbox" id="label_superpose" style="visibility: hidden">
+          <input type="checkbox" id="checkbox_superpose" />
+          <b>Activer la superposition de courbe</b>
+        </label>
+        <div class="box" id="DL_data" style="visibility: hidden">
+          <div id="customLegend"></div>
+          <br />
+          <button id="btn_dl" class="button">
+            Téléchargement des données du graphique
+          </button>
+          <button id="fullscreenBtn" class="button">Plein écran</button>
+          <button class="button" id="btn_zomm" style="visibility: hidden">
+            Dézommer
+          </button>
+        </div>
+        <div
+          class="box"
+          id="minimap"
+          style="height: 300px; width: 300px; float: right; margin-right: 10px"
+        ></div>
+      </div>
+    </div>
+    <script type="module" src="../../js/metrologue.js"></script>
+  </body>
+</html>

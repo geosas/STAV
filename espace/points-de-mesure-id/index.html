@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="icon" type="image/png" sizes="16x16" href="../../img/icon.png" />
+    <title>STAV</title>
+
+    <link rel="stylesheet" href="../../css/bulma1.min.css" />
+    <link rel="stylesheet" href="../../css/marker.css" />
+    <link rel="stylesheet" href="../../css/ol.css" />
+    <link rel="stylesheet" href="../../css/stav.css" />
+    <script src="../../js/lib/ol.js"></script>
+  </head>
+
+  <body>
+    <div id="header"></div>
+    <section class="section">
+      <div class="container mt-5">
+        <div class="columns">
+          <div class="column is-one-quarter" id="photoColumn">
+            <h2 class="title is-4">Localisation</h2>
+            <div class="block">
+              <div
+                id="map"
+                style="width: 100%; height: 200px; border-radius: 8px"
+              ></div>
+            </div>
+            <h2 class="title is-4">Point de mesure</h2>
+            <div class="content">
+              <div
+                class="image-container has-text-centered mb-5"
+                id="photoContainer"
+              ></div>
+            </div>
+          </div>
+          <div class="column">
+            <div class="block">
+              <h3 class="title is-5" id="thingName"></h3>
+              <p id="thingDesc"></p>
+            </div>
+            <div class="block">
+              <h3 class="title is-5">Flux de données :</h3>
+              <table class="table is-striped is-hoverable is-fullwidth">
+                <thead>
+                  <tr>
+                    <th>Nom du flux</th>
+                    <th>Description</th>
+                    <th>Capteur</th>
+                    <th>Paramètre observé</th>
+                    <th>Période observée</th>
+                  </tr>
+                </thead>
+                <tbody id="datastreamsBody"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+    <script type="module" src="../../js/points-de-mesure-id.js"></script>
+  </body>
+</html>

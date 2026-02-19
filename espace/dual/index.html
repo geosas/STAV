@@ -1,0 +1,243 @@
+<!doctype html>
+<html lang="fr" style="height: 100%">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="icon" type="image/png" sizes="16x16" href="../../img/icon.png" />
+    <title>STAV - Dual</title>
+
+    <link rel="stylesheet" href="../../css/bulma.min.css" />
+    <link rel="stylesheet" href="../../css/materialdesignicons.min.css" />
+
+    <script src="../../js/lib/ol.js"></script>
+    <link rel="stylesheet" href="../../css/ol.css" />
+
+    <script type="text/javascript" src="../../js/lib/dygraph.min.js"></script>
+    <link rel="stylesheet" type="text/css" href="../../css/dygraph.min.css" />
+    <link rel="stylesheet" href="../../css/stav.css" />
+  </head>
+
+  <body style="height: 100%">
+    <div id="header"></div>
+    <div class="columns dual-compact" style="height: 100%">
+      <!-- Colonne 1 : Service 1 (base) -->
+      <div class="column is-one-quarter" style="overflow-y: auto; height: 99%">
+        <div class="service-header">Service 1</div>
+
+        <div class="card" id="FamilleCard1">
+          <header class="card-header">
+            <p class="card-header-title">Famille</p>
+          </header>
+          <div class="card-content">
+            <div class="content" id="familleList1"></div>
+          </div>
+        </div>
+
+        <div class="card">
+          <header class="card-header">
+            <p class="card-header-title">Propriété Observée</p>
+          </header>
+          <div class="card-content">
+            <div class="content" id="obspList1"></div>
+          </div>
+        </div>
+
+        <div class="card">
+          <header class="card-header">
+            <label class="label card-header-title">Point de mesure:</label>
+            <input
+              type="text"
+              id="searchInput1"
+              placeholder="Filtrer"
+              style="margin-right: 5px"
+            />
+          </header>
+          <div class="card-content">
+            <progress
+              id="progressBar3_1"
+              class="progress is-info is-hidden"
+              max="100"
+            >
+              0%
+            </progress>
+            <div class="content" id="thingList1"></div>
+          </div>
+        </div>
+
+        <div class="card">
+          <header class="card-header">
+            <p class="card-header-title">Capteur</p>
+          </header>
+          <div class="card-content">
+            <div class="content" id="sensorList1"></div>
+          </div>
+        </div>
+
+        <div class="card">
+          <header class="card-header">
+            <p class="card-header-title">Série temporelle</p>
+            <span class="card-header-icon">
+              <button id="plotAll1" class="button is-small is-light is-hidden">
+                Tout afficher
+              </button>
+            </span>
+          </header>
+          <progress
+            id="progressBar2_1"
+            class="progress is-info is-hidden"
+            max="100"
+          >
+            0%
+          </progress>
+          <div class="card-content">
+            <div class="content" id="datastreamList1"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Colonne 2 : Graphique central -->
+      <div
+        class="column"
+        style="overflow-y: auto; height: 99%"
+        id="columnGraph"
+      >
+        <div
+          class="buttons"
+          style="display: flex; justify-content: flex-end; padding: 0"
+        >
+          <button id="btn_dl" class="button">📥 Téléchargement</button>
+          <progress
+            id="progressBar"
+            class="progress is-info is-hidden"
+            max="100"
+          >
+            0%
+          </progress>
+          <button id="fullscreenBtn" class="button">🖥️ Plein écran</button>
+          <button class="button" id="btn_zoom" style="display: none">
+            🔎 🔽 Dézommer
+          </button>
+        </div>
+        <div id="graphDiv" style="width: 95%; height: 400px"></div>
+        <div class="box" id="DL_data" style="visibility: hidden">
+          <div id="customLegend"></div>
+          <br />
+          <div id="stat_agg"></div>
+        </div>
+        <div id="ongletInfo" class="is-hidden">
+          <div class="tabs is-boxed">
+            <ul id="tabs"></ul>
+          </div>
+          <div id="tab-content"></div>
+        </div>
+      </div>
+
+      <!-- Colonne 3 : Service 2 -->
+      <div class="column is-one-quarter" style="overflow-y: auto; height: 99%">
+        <div class="service-header service2">Service 2</div>
+
+        <!-- Input URL pour charger le second service -->
+        <div class="card">
+          <header class="card-header">
+            <p class="card-header-title">URL du service</p>
+          </header>
+          <div class="card-content">
+            <div class="field has-addons">
+              <div class="control is-expanded">
+                <input
+                  class="input"
+                  type="text"
+                  id="service2Url"
+                  placeholder="https://..."
+                />
+              </div>
+              <div class="control">
+                <button class="button is-success" id="loadService2Btn">
+                  Charger
+                </button>
+              </div>
+            </div>
+            <progress
+              id="progressBar3_2"
+              class="progress is-success is-hidden"
+              max="100"
+            >
+              0%
+            </progress>
+          </div>
+        </div>
+
+        <!-- Filtres Service 2 (cachés jusqu'au chargement) -->
+        <div id="service2Filters" class="is-hidden">
+          <div class="card" id="FamilleCard2">
+            <header class="card-header">
+              <p class="card-header-title">Famille</p>
+            </header>
+            <div class="card-content">
+              <div class="content" id="familleList2"></div>
+            </div>
+          </div>
+
+          <div class="card">
+            <header class="card-header">
+              <p class="card-header-title">Propriété Observée</p>
+            </header>
+            <div class="card-content">
+              <div class="content" id="obspList2"></div>
+            </div>
+          </div>
+
+          <div class="card">
+            <header class="card-header">
+              <label class="label card-header-title">Point de mesure:</label>
+              <input
+                type="text"
+                id="searchInput2"
+                placeholder="Filtrer"
+                style="margin-right: 5px"
+              />
+            </header>
+            <div class="card-content">
+              <div class="content" id="thingList2"></div>
+            </div>
+          </div>
+
+          <div class="card">
+            <header class="card-header">
+              <p class="card-header-title">Capteur</p>
+            </header>
+            <div class="card-content">
+              <div class="content" id="sensorList2"></div>
+            </div>
+          </div>
+
+          <div class="card">
+            <header class="card-header">
+              <p class="card-header-title">Série temporelle</p>
+              <span class="card-header-icon">
+                <button
+                  id="plotAll2"
+                  class="button is-small is-light is-hidden"
+                >
+                  Tout afficher
+                </button>
+              </span>
+            </header>
+            <progress
+              id="progressBar2_2"
+              class="progress is-success is-hidden"
+              max="100"
+            >
+              0%
+            </progress>
+            <div class="card-content">
+              <div class="content" id="datastreamList2"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script type="module" src="../../js/dual.js"></script>
+  </body>
+</html>

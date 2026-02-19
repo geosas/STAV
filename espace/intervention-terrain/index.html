@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="icon" type="image/png" sizes="16x16" href="../../img/icon.png" />
+    <title>STAV</title>
+
+    <link rel="stylesheet" href="../../css/bulma1.min.css" />
+    <link rel="stylesheet" href="../../css/marker.css" />
+    <link rel="stylesheet" href="../../css/materialdesignicons.min.css" />
+    <link rel="stylesheet" href="../../css/stav.css" />
+  </head>
+
+  <body>
+    <div id="header"></div>
+    <section class="section">
+      <div class="container">
+        <h1 class="title" id="serviceName"></h1>
+        <h2 class="subtitle">Suivi des interventions terrain</h2>
+        <progress id="progressBar" class="progress is-info" max="100">
+          0%
+        </progress>
+        <table class="table is-striped is-fullwidth">
+          <thead>
+            <tr>
+              <th style="width: 20%">Date</th>
+              <th style="width: 80%">Intervention</th>
+            </tr>
+          </thead>
+          <tbody id="tableField"></tbody>
+        </table>
+      </div>
+    </section>
+    <script type="module" src="../../js/intervention-terrain.js"></script>
+  </body>
+</html>

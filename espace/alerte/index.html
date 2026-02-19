@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="icon" type="image/png" sizes="16x16" href="../../img/icon.png" />
+    <title>STAV</title>
+
+    <link rel="stylesheet" href="../../css/bulma1.min.css" />
+    <link rel="stylesheet" href="../../css/marker.css" />
+    <link rel="stylesheet" href="../../css/materialdesignicons.min.css" />
+    <link rel="stylesheet" href="../../css/stav.css" />
+  </head>
+
+  <body>
+    <div id="header"></div>
+    <section class="section">
+      <div id="container" class="container">
+        <!-- Titre centré + marge -->
+        <h3 id="serviceName" class="title is-3 has-text-centered mt-5 mb-5">
+          <!-- ton texte ici -->
+        </h3>
+        <div class="columns">
+          <div class="column">
+            <div class="field">
+              <label class="label">Filtrer par point de mesure/variable:</label>
+              <div class="control">
+                <input
+                  type="text"
+                  id="searchInput"
+                  placeholder="Exemple ST1 ou Humidité...  (colonne Name)"
+                  class="input is-info"
+                  style="margin-bottom: 10px"
+                />
+              </div>
+            </div>
+          </div>
+          <div class="column">
+            <div class="field">
+              <label class="label">Filtrer par alerte</label>
+              <select
+                id="searchSelectCause"
+                class="input is-info"
+                style="margin-bottom: 10px"
+              >
+                <option value="">-- Choisir un filtre --</option>
+                <option value="No data">No data</option>
+                <option value="Valeur aberrante">Valeur aberrante</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <div class="block">
+          <h3 id="titleProgress" idclass="title is-5">Analyse en cours :</h3>
+
+          <progress
+            id="progressBar"
+            class="progress is-large is-info"
+            max="100"
+          >
+            60%
+          </progress>
+          <table
+            id="tableDatastreams"
+            class="table is-striped is-hoverable is-fullwidth"
+          >
+            <thead>
+              <tr>
+                <th>Nom du flux</th>
+                <th>Période observée</th>
+                <th>Alerte</th>
+                <th>Capteur</th>
+                <th>Paramètre observé</th>
+              </tr>
+            </thead>
+            <tbody id="datastreamsBody">
+              <!-- Injecté par JS -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+    <script type="module" src="../../js/alerte.js"></script>
+  </body>
+</html>

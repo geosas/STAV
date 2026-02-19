@@ -1,0 +1,9 @@
+{
+  "urlService": "https://frost.geosas.fr/beauregard/v1.0/",
+  "nameService": "Site Urbain Rennais (SUR)",
+  "mode": "Frost_Geosas",
+  "metadata": "https://geosas.fr/geonetwork/srv/api/records/ff3ae11e-a774-4ca0-9eac-e966f3df82d5",
+  "description": "Données hydro-climatique de la ville de Rennes (deux sites d'étude: Beauregard et Atalante)",
+  "metrology": true,
+  "interventionTerrain": 122
+}

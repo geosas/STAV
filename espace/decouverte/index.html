@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="icon" type="image/png" sizes="16x16" href="../../img/icon.png" />
+    <title>STAV</title>
+
+    <link rel="stylesheet" href="../../css/bulma1.min.css" />
+    <link rel="stylesheet" href="../../css/marker.css" />
+    <link rel="stylesheet" href="../../css/materialdesignicons.min.css" />
+
+    <script src="../../js/lib/ol.js"></script>
+    <link rel="stylesheet" href="../../css/ol.css" />
+    <link rel="stylesheet" href="../../css/stav.css" />
+  </head>
+
+  <body>
+    <div id="header"></div>
+    <div class="columns">
+      <div class="column is-one-third">
+        <div class="card">
+          <header class="card-header">
+            <p class="card-header-title">Emplacement des points de mesure</p>
+          </header>
+          <div class="card-content">
+            <div class="content">
+              <div id="map" style="height: 500px; width: 100%"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="column">
+        <h3 class="title is-3" id="serviceName"></h3>
+        <div class="block" id="serviceDescription"></div>
+        <div class="block" id="DatastreamsInfos"></div>
+        <div class="block" id="ThingsInfos"></div>
+        <div class="block" id="ObservedPropertiesInfos"></div>
+        <div class="block" id="SensorsInfos"></div>
+        <div class="block" id="DateInfos"></div>
+        <div class="block" id="infoThingSelect"></div>
+      </div>
+    </div>
+    <div class="columns">
+      <div class="column">
+        <div class="card">
+          <header class="card-header">
+            <p class="card-header-title title is-3">Propriétés observées</p>
+          </header>
+          <div class="card-content">
+            <div class="content">
+              <table class="table">
+                <thead>
+                  <tr>
+                    <th></th>
+                    <th>Name</th>
+                    <th>Description</th>
+                    <th>Thesaurus</th>
+                  </tr>
+                </thead>
+                <tbody id="ObsPField"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="column">
+        <div class="card">
+          <header class="card-header">
+            <p class="card-header-title title is-3">Capteurs</p>
+          </header>
+          <div class="card-content">
+            <div class="content">
+              <table class="table">
+                <thead>
+                  <tr>
+                    <th></th>
+                    <th>Name</th>
+                    <th>Description</th>
+                    <th>Metadata</th>
+                  </tr>
+                </thead>
+                <tbody id="SensorField"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <script type="module" src="../../js/decouverte.js"></script>
+  </body>
+</html>

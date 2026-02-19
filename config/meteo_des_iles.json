@@ -1,0 +1,6 @@
+{
+    "urlService": "https://frost.geosas.fr/meteo_des_iles/v1.1/",
+    "serviceName": "Météo des îles",
+    "mode": "Frost_Geosas",
+    "description": "Météo des îles du projet ENEZ BZH"
+}
