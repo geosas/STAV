@@ -1185,7 +1185,8 @@ async function unzoomGraph(graph = null) {
   targetGraph.updateOptions({ dateWindow: null, valueRange: null });
   document.getElementById("btn_zomm").style.display = "none";
   plotGraph_internal();
-  state.listAggregation = {};
+  // if listAggregation empty  in mode frost_geosas next get will be with raw data
+  state.listAggregation = { ...state.listAggregationResume };
   state.dataZoomDict = {}; // Clear zoom data when unzooming
 }
 
