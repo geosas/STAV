@@ -244,6 +244,8 @@ function updateDatastreamList({ skipMapFit = false } = {}) {
   const hasSearchContext = searchInput && searchInput.value.trim() !== "";
 
   const previouslyChecked = getSelectedValues(elements.datastreamList);
+  const previousThings = getSelectedValues(elements.thingList);
+  const previousSensors = getSelectedValues(elements.sensorList);
   clearList(elements.datastreamList);
   clearList(elements.sensorList);
 
@@ -280,6 +282,18 @@ function updateDatastreamList({ skipMapFit = false } = {}) {
       );
     });
     updateSensorThingListFromDatastreams(state.datastreamsToShow);
+
+    // Restore previously selected Things and Sensors
+    elements.thingList
+      .querySelectorAll('input[type="checkbox"]')
+      .forEach((cb) => {
+        if (previousThings.includes(cb.value)) cb.checked = true;
+      });
+    elements.sensorList
+      .querySelectorAll('input[type="checkbox"]')
+      .forEach((cb) => {
+        if (previousSensors.includes(cb.value)) cb.checked = true;
+      });
 
     if (!skipMapFit) {
       highlightThingsOnMap(
@@ -391,7 +405,7 @@ function filterDatastreamsBySensorOrThing(selectedItems, key) {
       if (
         state.datastreamsToShow.includes(datastream) &&
         selectedItems.includes(state.datastreamDict[datastream][key]) &&
-        (otherSelected.length === 0 ||
+        (!state[otherKey + "Check"] ||
           otherSelected.includes(state.datastreamDict[datastream][otherKey]))
       ) {
         visibleDatastreams.push(datastream);
