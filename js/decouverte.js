@@ -23,7 +23,7 @@ const ENTITY_LABELS = {
   Things: "points de mesure (Things)",
   Sensors: "types de capteurs (Sensors)",
   ObservedProperties: "propriétés observées (ObservedProperties)",
-  Datastreams: "flux de données (DataStreams)",
+  Datastreams: "chroniques (DataStreams)",
 };
 
 /**
