@@ -12,6 +12,8 @@ import * as UtilsMap from "./utils/utils-mapping.js";
 let vectorLayer;
 let map;
 
+const downloadInfos = document.getElementById("downloadInfos");
+
 /**
  * Main initialization function
  */
@@ -19,7 +21,7 @@ async function main() {
   const config = await waitForAppReady();
   const container = document.getElementById("formContainer");
   const serviceNameEl = document.getElementById("serviceName");
-
+  const divDownloadInfos = document.getElementById("divDownloadInfos");
   // Update page title
   if (serviceNameEl && config.nameService) {
     serviceNameEl.textContent = config.nameService;
@@ -31,8 +33,8 @@ async function main() {
       select: "name,description,id,properties",
       expand: "Locations($select=location)",
     });
-    const things = await STAApi.fetchSTA(url);
-
+    const things = await STAApi.fetchSTA(url, { downloadInfos: downloadInfos });
+    divDownloadInfos.remove()
     if (things.length === 0) {
       container.innerHTML =
         '<p class="notification is-info">Aucun point de mesure trouvé.</p>';

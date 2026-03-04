@@ -115,13 +115,16 @@ async function _fetchDataArray(url, maxRecords = null) {
  *   - No 'value' array → single entity object
  *
  * @param {string} url - Full URL (from buildQuery)
- * @param {{paginate?: boolean, maxRecords?: number|null}=} options - Fetch options
+ * @param {{paginate?: boolean, 
+ *          maxRecords?: number|null,
+ *          downloadInfos?:  HTMLElement|null}=} options - Fetch options
  *   - `paginate` (default `true`) - Follow @iot.nextLink
  *   - `maxRecords` (default `null`) - Stop after N records, DataArray only
+ *   - `downloadInfos` (default `null`) - DOM element for display informations
  * @returns {Promise<Array|Object|string|{dataArray: any[], components: any, limitReached: boolean}>}
  */
 async function fetchSTA(url, options = {}) {
-  const { paginate = true, maxRecords = null } = options;
+  const { paginate = true, maxRecords = null, downloadInfos = null } = options;
 
   if (
     url.includes("$resultFormat=dataArray") ||
@@ -162,6 +165,10 @@ async function fetchSTA(url, options = {}) {
       if (data.value && Array.isArray(data.value)) {
         allData.push(...data.value);
         currentUrl = paginate ? data["@iot.nextLink"] || null : null;
+        if (currentUrl && downloadInfos) {
+          downloadInfos.textContent =
+            `Téléchargement en cours, nombre de points de mesures : ${allData.length}`;
+        }
       } else {
         return data;
       }

@@ -21,10 +21,11 @@
       <div class="column is-one-third">
         <div class="card">
           <header class="card-header">
-            <p class="card-header-title">Emplacement des points de mesure</p>
+            <p id="downloadInfos" class="card-header-title">Téléchargement des données en cours</p>
           </header>
           <div class="card-content">
             <div class="content">
+              <progress id="progressBar" class="progress is-info" max="100"></progress>
               <div id="map" style="height: 500px; width: 100%"></div>
             </div>
           </div>

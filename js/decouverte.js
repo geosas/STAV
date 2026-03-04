@@ -26,6 +26,8 @@ const ENTITY_LABELS = {
   Datastreams: "chroniques (DataStreams)",
 };
 
+const downloadInfos = document.getElementById("downloadInfos");
+
 /**
  * Fetches and displays entity counts
  */
@@ -333,7 +335,7 @@ async function loadThingsOnMap() {
       select: "id,name,description",
       expand: "Datastreams($select=id),Locations($select=location)",
     });
-    const things = await STAApi.fetchSTA(thingsUrl);
+    const things = await STAApi.fetchSTA(thingsUrl, { downloadInfos: downloadInfos });
 
     const geojson = UtilsMap.createFeatureCollection(things);
     state.vectorLayer = UtilsMap.createVectorLayer(geojson);
@@ -395,6 +397,8 @@ async function main() {
   // Initialize map
   state.map = UtilsMap.createMap("map", { zoom: 15 });
   await loadThingsOnMap();
+  document.getElementById("progressBar").classList.add("is-hidden");
+  downloadInfos.innerText = "Emplacement des points de mesure";
 }
 
 main();

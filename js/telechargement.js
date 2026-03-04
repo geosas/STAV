@@ -18,6 +18,7 @@ import {
 
 // Application state
 const state = {
+  thingsLoaded: false,
   config: null,
   obspDict: {},
   datastreamDict: {},
@@ -71,6 +72,7 @@ const elements = {
   progressBar: document.getElementById("progressBar"),
   progressBar2: document.getElementById("progressBar2"),
   progressBar3: document.getElementById("progressBar3"),
+  downloadInfos: document.getElementById("downloadInfos")
 };
 
 const paginationCtrl = createPaginationController({
@@ -109,7 +111,7 @@ async function loadDatastreamsInfo() {
     console.error("Error:", error);
     Utils.showNotification("Erreur de chargement", "danger");
   } finally {
-    elements.progressBar3.classList.add("is-hidden");
+    //elements.progressBar3.classList.add("is-hidden");
   }
 }
 
@@ -128,41 +130,51 @@ async function loadSensorsInfo() {
 }
 
 async function loadThingsInfo() {
-  const thingsUrl = STAApi.buildQuery(state.config.urlService, "Things", {
-    top: 10000,
-    select: "name,description,id",
-    expand:
-      "Locations($select=location;$top=10000),Datastreams($select=name;$top=10000)",
-  });
-  const things = await STAApi.fetchSTA(thingsUrl);
-  things.forEach((thing) => {
-    state.thingDict[thing.name] = {
-      description: thing.description,
-      id: thing["@iot.id"],
-    };
-    let loc = thing.Locations[0].location;
-    if (!loc.geometry) {
-      loc = {
-        type: "Feature",
-        geometry: { type: loc.type, coordinates: loc.coordinates },
-        properties: {},
+  try {
+    const thingsUrl = STAApi.buildQuery(state.config.urlService, "Things", {
+      top: 10000,
+      select: "name,description,id",
+      expand:
+        "Locations($select=location;$top=10000),Datastreams($select=name;$top=10000)",
+    });
+    const things = await STAApi.fetchSTA(thingsUrl, { downloadInfos: elements.downloadInfos });
+    things.forEach((thing) => {
+      state.thingDict[thing.name] = {
+        description: thing.description,
+        id: thing["@iot.id"],
       };
-    }
-    loc.properties = {
-      name: thing.name,
-      id: thing["@iot.id"],
-      description: thing.description,
-      datastreamsName: thing.Datastreams.map((ds) => ds.name),
-    };
-    state.geojsonFeature.features.push(loc);
-  });
+      let loc = thing.Locations[0].location;
+      if (!loc.geometry) {
+        loc = {
+          type: "Feature",
+          geometry: { type: loc.type, coordinates: loc.coordinates },
+          properties: {},
+        };
+      }
+      loc.properties = {
+        name: thing.name,
+        id: thing["@iot.id"],
+        description: thing.description,
+        datastreamsName: thing.Datastreams.map((ds) => ds.name),
+      };
+      state.geojsonFeature.features.push(loc);
+    });
 
-  const geojson = UtilsMap.createFeatureCollection(things);
-  state.vectorLayer = UtilsMap.createVectorLayer(geojson);
-  state.map.addLayer(state.vectorLayer);
-  UtilsMap.fitToFeatures(state.map, state.vectorLayer, 150);
-  state.map.on("click", handleMapClick);
-  UtilsMap.addCursorFeedback(state.map);
+    const geojson = UtilsMap.createFeatureCollection(things);
+    state.vectorLayer = UtilsMap.createVectorLayer(geojson);
+    state.map.addLayer(state.vectorLayer);
+    UtilsMap.fitToFeatures(state.map, state.vectorLayer, 150);
+    state.map.on("click", handleMapClick);
+    UtilsMap.addCursorFeedback(state.map);
+    elements.progressBar3.classList.add("is-hidden");
+    state.thingsLoaded = true;
+  } catch (error) {
+    console.error("Error:", error);
+    Utils.showNotification("Erreur de chargement", "danger");
+  } finally {
+    elements.progressBar3.classList.add("is-hidden");
+    elements.downloadInfos.classList.add("is-hidden");
+  }
 }
 
 async function populateObservedPropertiesList() {
@@ -239,6 +251,12 @@ function updateObservedPropertiesByFamille() {
 }
 
 function updateDatastreamList({ skipMapFit = false } = {}) {
+  if (!state.thingsLoaded) {
+    const lastChecked = elements.obspList.querySelector('input[type="checkbox"]:checked');
+    if (lastChecked) lastChecked.checked = false;
+    Utils.showNotification("Téléchargement en cours... veuillez patienter", "info");
+    return
+  }
   resetPagination();
   const searchInput = document.getElementById("searchInput");
   const hasSearchContext = searchInput && searchInput.value.trim() !== "";
