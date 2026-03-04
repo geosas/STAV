@@ -35,6 +35,8 @@ STAV follows the **FAIR principles** (Findable, Accessible, Interoperable, Reusa
 
 STAV was initially designed for **environmental observatories**, where the number of measurement points is limited. It is currently **not intended to visualize more than tens of thousands of measurement points** (future adaptations will make this possible).
 
+STAV is designed to be as simple to deploy as possible. Simply copying the project directory onto your machine or server is all it takes to get started, no complex installation procedure or external dependencies required.
+
 ## Features
 
 STAV allows users to:
@@ -96,7 +98,7 @@ Access via: `https://your-domain.com/stav/`
 #### 2. Direct from GitHub
 
 Use STAV directly from your GitHub Pages (no hosting required).
-
+For example : [https://geosas.github.io/STAV/](https://geosas.github.io/STAV/)
 #### 3. Local Development
 
 Run locally using Python for test:
