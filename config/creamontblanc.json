@@ -1,0 +1,7 @@
+{
+  "urlService": "https://frost-server.monitoring.creamontblanc.org/FROST-Server/v1.1",
+  "nameService": "Creamontblanc",
+  "mode": "",
+  "metadata": "https://atlas.creamontblanc.org/img/pages/indicateur/temperature/Stations_CREA.pdf",
+  "description": "CREA Mont-Blanc, station température de l'air"
+}
