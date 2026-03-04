@@ -1581,7 +1581,7 @@ async function applyShareState(shareData) {
   }
 
   if (datastreamNames.length === 0) {
-    Utils.showNotification("Aucune série trouvée pour ce lien", "warning");
+    Utils.showNotification("Aucune chronique trouvée pour ce lien", "warning");
     return;
   }
 
@@ -1696,7 +1696,7 @@ initShareButton("btn_share", {
   getPageSpecificData: () => {
     const sel = getSelectedValues(elements.datastreamList);
     if (sel.length === 0) {
-      Utils.showNotification("Aucune série sélectionnée", "warning");
+      Utils.showNotification("Aucune chronique sélectionnée", "warning");
       return null;
     }
     return { ds: sel.map((n) => state.datastreamDict[n].id) };

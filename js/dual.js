@@ -498,7 +498,7 @@ function plotAllDatastreams(serviceNum) {
         {
           text: "Annuler",
           class: "",
-          onClick: () => {},
+          onClick: () => { },
         },
       ],
     });
@@ -682,8 +682,8 @@ function plotGraph_internal() {
   );
   const selectedValues2 = services[2].loaded
     ? getSelectedValues(getElements(2).datastreamList).map((name) =>
-        getSeriesKey(2, name),
-      )
+      getSeriesKey(2, name),
+    )
     : [];
   const allSelectedValues = [...selectedValues1, ...selectedValues2];
 
@@ -728,8 +728,8 @@ function plotGraph_internal() {
         mergedData.push(sharedState.seriesData[key].data);
         labels.push(
           sharedState.seriesData[key].label +
-            " " +
-            sharedState.seriesData[key].unit,
+          " " +
+          sharedState.seriesData[key].unit,
         );
         sharedState.seriesConfig[
           `${sharedState.seriesData[key].label} ${sharedState.seriesData[key].unit}`
@@ -739,8 +739,8 @@ function plotGraph_internal() {
             : {};
         sharedState.dictArgStat[
           sharedState.seriesData[key].label +
-            " " +
-            sharedState.seriesData[key].unit
+          " " +
+          sharedState.seriesData[key].unit
         ] = sharedState.seriesData[key].graph;
       }
     }
@@ -777,8 +777,8 @@ async function unzoomGraph() {
   );
   const selectedValues2 = services[2].loaded
     ? getSelectedValues(getElements(2).datastreamList).map((name) =>
-        getSeriesKey(2, name),
-      )
+      getSeriesKey(2, name),
+    )
     : [];
   const allSelectedValues = [...selectedValues1, ...selectedValues2];
   const filteredSeries = [];
@@ -859,8 +859,8 @@ async function updateGraphZoom() {
   );
   const selectedValues2 = services[2].loaded
     ? getSelectedValues(getElements(2).datastreamList).map((name) =>
-        getSeriesKey(2, name),
-      )
+      getSeriesKey(2, name),
+    )
     : [];
   const allSelectedValues = [...selectedValues1, ...selectedValues2];
 
@@ -982,7 +982,7 @@ function showDownloadModal() {
     : [];
 
   if (selectedValues1.length === 0 && selectedValues2.length === 0) {
-    Utils.showNotification("Aucune série sélectionnée", "warning");
+    Utils.showNotification("Aucune chronique sélectionnée", "warning");
     return;
   }
 

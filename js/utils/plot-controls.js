@@ -40,7 +40,7 @@ export function showDownloadModal({
   if (beforeShow) beforeShow();
 
   if (!datastreams || datastreams.length === 0) {
-    showNotification("Aucune série sélectionnée", "warning");
+    showNotification("Aucune chronique sélectionnée", "warning");
     return;
   }
 
