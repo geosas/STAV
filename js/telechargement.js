@@ -262,10 +262,10 @@ function updateDatastreamList({ skipMapFit = false } = {}) {
     const filteredDatastreams =
       selectedThings.length > 0
         ? state.datastreamsToShow.filter(
-            (ds) =>
-              state.datastreamDict[ds] &&
-              selectedThings.includes(state.datastreamDict[ds].thing),
-          )
+          (ds) =>
+            state.datastreamDict[ds] &&
+            selectedThings.includes(state.datastreamDict[ds].thing),
+        )
         : state.datastreamsToShow;
 
     filteredDatastreams.forEach((datastream) => {
@@ -348,8 +348,8 @@ function updateDatastreamFromSensor() {
     selectedThings.length > 0
       ? new Set(selectedThings)
       : getThingNamesFromDatastreams(
-          getAllCheckboxValues(elements.datastreamList),
-        );
+        getAllCheckboxValues(elements.datastreamList),
+      );
   highlightThingsOnMap(thingsToHighlight);
 }
 
@@ -1509,7 +1509,7 @@ function plotAllDatastreams() {
         {
           text: "Annuler",
           class: "",
-          onClick: () => {},
+          onClick: () => { },
         },
       ],
     });
