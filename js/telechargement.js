@@ -823,7 +823,8 @@ async function downloadAndPlotPage(pageNum) {
           skip: skip || undefined,
         },
       );
-      const refResult = await STAApi.fetchSTA(refUrl, { paginate: false });
+      const refResult = await STAApi.fetchSTA(refUrl,
+        { paginate: false, maxRecords: state.pagination.pageSize });
       const refData = UtilsGraph.transformDataArray(refResult);
       pageCache[pag.referenceDs] = refData;
 

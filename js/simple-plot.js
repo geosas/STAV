@@ -332,7 +332,7 @@ async function initPagination(totalCount) {
           skip: skip || undefined,
         },
       );
-      const result = await STAApi.fetchSTA(url, { paginate: false });
+      const result = await STAApi.fetchSTA(url, { paginate: false, maxRecords: PAGE_SIZE });
       data = transformDataArray(result);
 
       // FIFO cache
