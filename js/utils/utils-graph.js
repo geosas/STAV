@@ -6,6 +6,8 @@
 import * as STAApi from "./sta-api.js";
 import { escapeHtml, showModal } from "./utils.js";
 
+let modalShown = false;
+
 /**
  * Creates a bar chart plotter export function for Dygraph
  * @param {number} barWidth - Width of each bar in pixels
@@ -305,11 +307,13 @@ export function calculStatGraph(dygraph, seriesTypeDict) {
 
   const sums = new Array(series.length).fill(0);
   const counts = new Array(series.length).fill(0);
-  if (data.length > 500000) {
+  if (!modalShown && data.length > 500000) {
+    modalShown = true;
     showModal({
       title: "⚠️ Attention",
       body: `Il y a beaucoup de données : ${data.length} observations, 
-            votre navigateur  va peut-être subir des ralentissement.`,
+            votre navigateur  va peut-être subir des ralentissement.
+            Ce message ne s'affichera plus.`,
       buttons: [
         {
           text: "Continuer",
