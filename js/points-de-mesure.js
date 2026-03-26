@@ -120,7 +120,7 @@ function renderMap(thing) {
   const geojson = UtilsMap.createFeatureCollection(thing);
   vectorLayer = UtilsMap.createVectorLayer(geojson);
   map.addLayer(vectorLayer);
-  UtilsMap.fitToFeatures(map, vectorLayer, 1000);
+  UtilsMap.fitToFeatures(map, vectorLayer, 0.3);
   map.on("click", handleMapClick);
   UtilsMap.addCursorFeedback(map);
 }

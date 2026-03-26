@@ -340,7 +340,7 @@ async function loadThingsOnMap() {
     const geojson = UtilsMap.createFeatureCollection(things);
     state.vectorLayer = UtilsMap.createVectorLayer(geojson);
     state.map.addLayer(state.vectorLayer);
-    UtilsMap.fitToFeatures(state.map, state.vectorLayer, 1000);
+    UtilsMap.fitToFeatures(state.map, state.vectorLayer, 0.3);
     state.map.on("click", handleMapClick);
     UtilsMap.addCursorFeedback(state.map);
   } catch (error) {

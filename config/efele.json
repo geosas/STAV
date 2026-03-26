@@ -1,0 +1,8 @@
+{
+    "urlService": "https://sensorthings.umrsas.inrae.fr/efele/v1.1/",
+    "nameService": "SEORE PRO EFELE",
+    "description": "Observatoire labellisé du SOERE PRO de l'INRAE sur les effets agronomiques et environnementaux des apports d'éffluents d'élevage. ",
+    "metadata": "https://geosas.fr/geonetwork/srv/fre/catalog.search#/metadata/0a30c948-d1a5-4ac7-a510-3a81dce49310",
+    "metrology": true,
+    "mode": "stean"
+}

@@ -227,15 +227,32 @@ function createVectorLayer(geojson, styleFunction = createStyleFunction()) {
 /**
  * Calculate extent with padding
  * @param {Array} bbox - Bounding box [minX, minY, maxX, maxY]
- * @param {number} padding - Padding to add (in map units)
+ * @param {number} padding - Padding value: if < 1, treated as a fraction of the extent (e.g. 0.1 = 10%); 
+ * if >= 1, treated as a fixed value in map units
  * @returns {Array} Padded extent
  */
-function calculateExtent(bbox, padding = 250) {
+function calculateExtent(bbox, padding = 0.1) {
+  let paddingX, paddingY;
+
+  if (padding < 1) {
+    const width = bbox[2] - bbox[0];
+    const height = bbox[3] - bbox[1];
+    paddingX = width * padding;
+    paddingY = height * padding;
+
+    paddingX = Math.max(paddingX, 250);
+    paddingY = Math.max(paddingY, 250);
+
+  } else {
+    paddingX = padding;
+    paddingY = padding;
+  }
+
   return [
-    bbox[0] - 2 * padding,
-    bbox[1] - 2 * padding,
-    bbox[2] + 2 * padding,
-    bbox[3] + 2 * padding,
+    bbox[0] - paddingX,
+    bbox[1] - paddingY,
+    bbox[2] + paddingX,
+    bbox[3] + paddingY,
   ];
 }
 
