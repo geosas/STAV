@@ -225,7 +225,7 @@ export async function downloadObservations(params) {
     resultFormat: "dataArray",
     select: "phenomenonTime,result",
     orderby: "phenomenonTime asc",
-    top: 10000,
+    top: 50000,
     filter,
   });
 
