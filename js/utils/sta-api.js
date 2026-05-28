@@ -4,6 +4,81 @@
  * for differents formats) for SensorThings API
  */
 
+const MISSING = "CHAMP OBLIGATOIRE MANQUANT";
+
+const MANDATORY_FIELDS = {
+  Things: ["name", "description"],
+  Locations: ["name", "description", "encodingType", "location"],
+  Sensors: ["name", "description", "encodingType", "metadata"],
+  ObservedProperties: ["name", "definition", "description"],
+  Datastreams: ["name", "description", "unitOfMeasurement", "observationType"],
+  Observations: ["phenomenonTime", "result"],
+  FeaturesOfInterest: ["name", "description", "encodingType", "feature"],
+};
+
+/**
+ * Detects the SensorThings entity type from a URL path
+ * @param {string} url
+ * @returns {string|null}
+ */
+function _detectEntityType(url) {
+  const path = url.split("?")[0];
+  let lastMatch = null;
+  let lastIndex = -1;
+  for (const name of Object.keys(MANDATORY_FIELDS)) {
+    const idx = path.lastIndexOf(`/${name}`);
+    if (idx > lastIndex) {
+      lastIndex = idx;
+      lastMatch = name;
+    }
+  }
+  return lastMatch;
+}
+
+/**
+ * Parses $select fields from a URL. Returns null if no $select present (= all fields requested).
+ * @param {string} url
+ * @returns {Set<string>|null}
+ */
+function _parseSelectFields(url) {
+  const match = url.match(/[?&]\$select=([^&]*)/i);
+  if (!match) return null;
+  return new Set(match[1].split(",").map((f) => f.trim()));
+}
+
+/**
+ * Fills missing mandatory STA fields with a placeholder value.
+ * Only checks fields that were actually requested (respects $select).
+ * @param {Array|Object} data
+ * @param {string|null} entityType
+ * @param {Set<string>|null} selectedFields - null means all fields were requested
+ * @returns {Array|Object}
+ */
+function _normalizeMandatoryFields(data, entityType, selectedFields) {
+  if (!entityType) return data;
+  const fields = MANDATORY_FIELDS[entityType];
+  if (!fields) return data;
+
+  const fieldsToCheck = selectedFields
+    ? fields.filter((f) => selectedFields.has(f))
+    : fields;
+
+  if (fieldsToCheck.length === 0) return data;
+
+  const normalize = (entity) => {
+    if (typeof entity !== "object" || entity === null) return entity;
+    for (const field of fieldsToCheck) {
+      if (entity[field] == null || entity[field] === "") {
+        console.warn(`[STA] ${entityType}: champ obligatoire manquant — "${field}"`, entity["@iot.id"] ?? "");
+        entity[field] = MISSING;
+      }
+    }
+    return entity;
+  };
+
+  return Array.isArray(data) ? data.map(normalize) : normalize(data);
+}
+
 /**
  * Builds a SensorThings API query URL with parameters
  * @param {string} baseUrl - Base URL of the service
@@ -115,16 +190,13 @@ async function _fetchDataArray(url, maxRecords = null) {
  *   - No 'value' array → single entity object
  *
  * @param {string} url - Full URL (from buildQuery)
- * @param {{paginate?: boolean, 
- *          maxRecords?: number|null,
- *          downloadInfos?:  HTMLElement|null}=} options - Fetch options
+ * @param {{paginate?: boolean, maxRecords?: number|null}=} options - Fetch options
  *   - `paginate` (default `true`) - Follow @iot.nextLink
  *   - `maxRecords` (default `null`) - Stop after N records, DataArray only
- *   - `downloadInfos` (default `null`) - DOM element for display informations
  * @returns {Promise<Array|Object|string|{dataArray: any[], components: any, limitReached: boolean}>}
  */
 async function fetchSTA(url, options = {}) {
-  const { paginate = true, maxRecords = null, downloadInfos = null } = options;
+  const { paginate = true, maxRecords = null } = options;
 
   if (
     url.includes("$resultFormat=dataArray") ||
@@ -151,6 +223,9 @@ async function fetchSTA(url, options = {}) {
 
   const allData = [];
   let currentUrl = url;
+  const entityType = _detectEntityType(url);
+  const shouldNormalize = entityType !== "Observations";
+  const selectedFields = _parseSelectFields(url);
 
   try {
     do {
@@ -165,16 +240,12 @@ async function fetchSTA(url, options = {}) {
       if (data.value && Array.isArray(data.value)) {
         allData.push(...data.value);
         currentUrl = paginate ? data["@iot.nextLink"] || null : null;
-        if (currentUrl && downloadInfos) {
-          downloadInfos.textContent =
-            `Téléchargement en cours, nombre de points de mesures : ${allData.length}`;
-        }
       } else {
-        return data;
+        return shouldNormalize ? _normalizeMandatoryFields(data, entityType, selectedFields) : data;
       }
     } while (currentUrl);
 
-    return allData;
+    return shouldNormalize ? _normalizeMandatoryFields(allData, entityType, selectedFields) : allData;
   } catch (error) {
     console.error(`Failed to fetch from SensorThings API:`, error);
     throw error;
