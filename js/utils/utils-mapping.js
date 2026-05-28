@@ -157,7 +157,8 @@ function createMap(containerId, options = {}) {
  * @returns {Object} GeoJSON Feature
  */
 function normalizeLocation(thing) {
-  let location = thing.Locations ? thing.Locations[0].location : thing.location;
+  //if there is no location in the sta
+  let location = thing.Locations?.length > 0 ? thing.Locations[0].location : thing.location;
   if (!location.geometry) {
     location = {
       type: "Feature",
@@ -190,8 +191,12 @@ function createFeatureCollection(things) {
   const features = [];
 
   for (const thing of things) {
+    //Careful for things who don't have loction
+    const hasLocation = thing.Locations?.length > 0 || thing.location;
+    if (!hasLocation) continue;
     features.push(normalizeLocation(thing));
   }
+
 
   return {
     type: "FeatureCollection",
