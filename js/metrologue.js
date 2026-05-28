@@ -132,6 +132,15 @@ async function createSensorTable() {
     });
 
     table.innerHTML = sensorContent;
+    const select = document.getElementById("searchDescriptionInput");
+    while (select.options.length > 1) select.remove(1);
+    sensors.forEach((sensor) => {
+      const option = document.createElement("option");
+      option.value = sensor.name;
+      option.textContent = sensor.name;
+      select.appendChild(option);
+    });
+
   } catch (error) {
     console.error("Failed to create sensor table:", error);
     Utils.showNotification("Erreur lors du chargement des capteurs", "danger");
@@ -419,18 +428,14 @@ function filterTable() {
  * Filters cards by sensor description
  */
 function filterByDescription() {
-  const input = document.getElementById("searchDescriptionInput");
-  const filter = input.value.toUpperCase();
+  const value = document.getElementById("searchDescriptionInput").value;
   const cards = document.querySelectorAll("#table_sensor .card");
 
   cards.forEach((card) => {
     const p = card.querySelector("p.nameSensor");
 
     if (p) {
-      const txtValue = p.textContent || p.innerText;
-      card.style.display = txtValue.toUpperCase().includes(filter)
-        ? ""
-        : "none";
+      card.style.display = !value || p.textContent.trim() === value ? "" : "none";
     }
   });
 }
@@ -545,7 +550,7 @@ main();
 // Event listeners (replacing inline onclick/onkeyup handlers)
 document
   .getElementById("searchDescriptionInput")
-  .addEventListener("keyup", filterByDescription);
+  .addEventListener("change", filterByDescription);
 document.getElementById("searchInput").addEventListener("keyup", filterTable);
 document.getElementById("btn_dl").addEventListener("click", downloadAllCSV);
 document

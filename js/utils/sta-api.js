@@ -68,7 +68,7 @@ function _normalizeMandatoryFields(data, entityType, selectedFields) {
   const normalize = (entity) => {
     if (typeof entity !== "object" || entity === null) return entity;
     for (const field of fieldsToCheck) {
-      if (entity[field] == null || entity[field] === "") {
+      if (!(field in entity)) {
         console.warn(`[STA] ${entityType}: champ obligatoire manquant — "${field}"`, entity["@iot.id"] ?? "");
         entity[field] = MISSING;
       }
