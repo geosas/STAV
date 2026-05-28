@@ -96,6 +96,12 @@ function _normalizeMandatoryFields(data, entityType, selectedFields) {
  * @returns {string} Complete query URL
  */
 function buildQuery(baseUrl, entity, options = {}) {
+  // Non-integer IDs (UUIDs, strings) must be single-quoted in STA URLs: Datastreams('uuid')               
+  entity = entity.replace(/\(([^)]+)\)/g, (match, id) => {
+    if (/^\d+$/.test(id) || id.startsWith("'")) return match;
+    return `('${id}')`;
+  });
+
   const params = new URLSearchParams();
 
   if (options.select) params.append("$select", options.select);
