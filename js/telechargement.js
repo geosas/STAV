@@ -44,11 +44,6 @@ const state = {
   vectorLayer: new ol.layer.Vector({}),
   plotHighlightLayer: null,
   boundingBox: null,
-  geojsonFeature: {
-    type: "FeatureCollection",
-    crs: { type: "name", properties: { name: "EPSG:4326" } },
-    features: [],
-  },
   pagination: {
     enabled: false,
     currentPage: 1,
@@ -143,21 +138,6 @@ async function loadThingsInfo() {
         description: thing.description,
         id: thing["@iot.id"],
       };
-      let loc = thing.Locations[0].location;
-      if (!loc.geometry) {
-        loc = {
-          type: "Feature",
-          geometry: { type: loc.type, coordinates: loc.coordinates },
-          properties: {},
-        };
-      }
-      loc.properties = {
-        name: thing.name,
-        id: thing["@iot.id"],
-        description: thing.description,
-        datastreamsName: thing.Datastreams.map((ds) => ds.name),
-      };
-      state.geojsonFeature.features.push(loc);
     });
 
     const geojson = UtilsMap.createFeatureCollection(things);
