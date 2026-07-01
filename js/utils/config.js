@@ -7,6 +7,26 @@
 /**
 
 /**
+  * Déduit le fichier de config par défaut à partir du nom de la racine de montage.
+  * Ex: servi sous /sites-urbains-rennais/ -> config/sites-urbains-rennais.json.
+  * Permet d'ouvrir STAV sans ?config= quand la racine porte le nom de l'observatoire.
+  * @returns {string|null} URL du fichier de config, ou null (montage à la racine)
+  */
+import { BASE_URL } from "./utils.js";
+
+function defaultConfigFromMountRoot() {
+  try {
+    const base = new URL(BASE_URL);
+    const segments = base.pathname.split("/").filter(Boolean);
+    const observatoire = segments[segments.length - 1];
+    if (!observatoire) return null;
+    return `${BASE_URL}config/${observatoire}.json`;
+  } catch (error) {
+    return null;
+  }
+}
+
+/**
  * Fetches and parses a configuration JSON file
  * @param {string} configUrl - URL of the configuration file
  * @returns {Promise<Object|null>} Configuration object or null on error
@@ -75,14 +95,20 @@ async function loadConfiguration() {
     sessionStorage.setItem("config", configFromUrl);
   }
 
-  const configName = configFromUrl || sessionStorage.getItem("config");
+  // Priority : ?config= explicite > URL root > session 
+  const mountDefault = defaultConfigFromMountRoot();
+  const configName =
+    configFromUrl || mountDefault || sessionStorage.getItem("config");
 
   if (!configName) {
     console.warn("No configuration parameter found in URL or sessionStorage");
     return { configName: null, data: null };
   }
+  const derivedFromMount = !configFromUrl && configName === mountDefault;
 
-  ensureConfigInUrl(configName);
+  if (!derivedFromMount) {
+    ensureConfigInUrl(configName);
+  }
 
   const configData = await fetchConfigFile(configName);
 
@@ -91,7 +117,9 @@ async function loadConfiguration() {
     return { configName, data: null };
   }
 
-  propagateConfigToLinks(configName);
+  if (!derivedFromMount) {
+    propagateConfigToLinks(configName);
+  }
 
   return {
     configName,
