@@ -137,6 +137,18 @@ export function determineAggregation(count) {
 }
 
 /**
+ * Returns 'bar' if the ObservedProperty is in the config's bar list, else 'line'.
+ * @param {string|undefined} observedPropertyName
+ * @param {string[]} barObservedProperties - from appConfig
+ * @returns {'bar'|'line'}
+ */
+export function getGraphType(observedPropertyName, barObservedProperties = []) {
+  return observedPropertyName && barObservedProperties.includes(observedPropertyName)
+    ? "bar"
+    : "line";
+}
+
+/**
  * Builds the $groupby parameter value for SensorThings aggregation.
  * Next improvement go to $ODATA !
  * @param {string} aggregation - 'hour' or 'day'
@@ -157,9 +169,10 @@ export function buildGroupByParam(aggregation, graphType) {
 export function getAggregationLabel(aggregation, graphType) {
   if (!aggregation) return "Données brutes";
   if (aggregation === "moving_average") return "Moyenne mobile";
-  const method = graphType === "bar" ? "Cumul" : "Moyenne";
-  const period = aggregation === "hour" ? "heure" : "jour";
-  return `${method}/${period}`;
+  if (graphType === "bar") {
+    return aggregation === "hour" ? "Cumul/heure" : "Cumul/jour";
+  }
+  return aggregation === "hour" ? "Moyenne/heure" : "Moyenne/jour";
 }
 
 /**

@@ -145,6 +145,8 @@ Create `config/my-service.json`:
 - `mode` (optional): Enable custom STA improvement. Use: `"stean"` for [STEAN](https://github.com/Mario-35/Stean) STA server or `"Frost_Geosas"` for GéoSAS-specific features,
 - `metadata` (optional): URL (URI) to metadata record (automatically adds a "Metadonnée" link in the navbar)
 - `metrology` (optional): use `true` for enable the metrology page (automatically adds a "Métrologie" link in the navbar),
+- `barObservedProperties` (optional): list of ObservedProperty names to render as bar charts with SUM aggregation (e.g. `["Precipitation", "Rainfall"]`). All others default to line charts with MEAN aggregation.
+
 
 ### Step 3: Access STAV with Your Configuration
 
@@ -198,13 +200,6 @@ All added terms try to rely on structured vocabularies and are aligned as closel
 
   ```json
     "properties": { "minValue": 0, "maxValue": 100 }
-  ```
-
-- **`graph`**: Graph type selection (line or bar)
-  - Adapts visualization to data nature
-  - Example:
-  ```json
-  "properties": { "graph": "bar" }
   ```
 
 These additions respond to concrete needs expressed by field operators, such as the importance of pictures to better identify and understand measurement points.

@@ -22,6 +22,7 @@ import {
   downloadObservations,
   transformDataArray,
   getAggregationLabel,
+  getGraphType,
   determineAggregation,
   createThresholdCallback,
   parseGraphDatas,
@@ -67,7 +68,7 @@ async function updateGraphZoom() {
   plotState.zoom = true;
 
   const { name, properties, unitOfMeasurement } = plotState.datastreamInfo;
-  const graphType = properties?.graph || "line";
+  const graphType = getGraphType(plotState.datastreamInfo.ObservedProperty?.name, plotState.config.barObservedProperties);
 
   if (plotState.config.modeService === "Frost_Geosas") {
     const xRange = plotState.graph.xAxisRange();
@@ -126,7 +127,7 @@ async function unzoomGraph() {
   ) {
     plotState.currentAggregation = plotState.initialAggregation;
     const { name, properties, unitOfMeasurement } = plotState.datastreamInfo;
-    const graphType = properties?.graph || "line";
+    const graphType = getGraphType(plotState.datastreamInfo.ObservedProperty?.name, plotState.config.barObservedProperties);
     const aggLabel = getAggregationLabel(
       plotState.initialAggregation,
       graphType,
@@ -230,7 +231,8 @@ async function plotStean() {
  */
 async function plotFrostGeosas() {
   const { name, properties, unitOfMeasurement } = plotState.datastreamInfo;
-  const graphType = properties?.graph || "line";
+  const graphType = getGraphType(plotState.datastreamInfo.ObservedProperty?.name, plotState.config.barObservedProperties);
+
 
   const { data, aggregation } = await downloadObservations({
     baseUrl: plotState.config.urlService,
@@ -269,8 +271,7 @@ async function plotFrostGeosas() {
  */
 async function plotAll() {
   const { name, properties, unitOfMeasurement } = plotState.datastreamInfo;
-  const graphType = properties?.graph || "line";
-
+  const graphType = getGraphType(plotState.datastreamInfo.ObservedProperty?.name, plotState.config.barObservedProperties);
   const { data } = await downloadObservations({
     baseUrl: plotState.config.urlService,
     datastreamId: plotState.datastreamId,
@@ -305,7 +306,7 @@ async function initPagination(totalCount) {
   const pageOrder = [];
 
   const { name, properties, unitOfMeasurement } = plotState.datastreamInfo;
-  const graphType = properties?.graph || "line";
+  const graphType = getGraphType(plotState.datastreamInfo.ObservedProperty?.name, plotState.config.barObservedProperties);
 
   async function loadPage(pageNum) {
     // Reset zoom when changing page
@@ -442,6 +443,7 @@ async function main() {
         `Datastreams(${plotState.datastreamId})`,
         {
           select: "name,properties,unitOfMeasurement",
+          expand: "ObservedProperty($select=name)"
         },
       );
       const datastream = await STAApi.fetchSTA(datastreamUrl, {

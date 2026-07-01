@@ -50,6 +50,7 @@ async function initialize() {
     description: data?.description || null,
     metrology: data?.metrology || null,
     interventionTerrain: data?.interventionTerrain || null,
+    barObservedProperties: data?.barObservedProperties || [],
   };
 
   addMetadataLink(appConfig);

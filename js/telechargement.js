@@ -697,7 +697,7 @@ async function plotGraphBasique() {
 
   selectedValues.forEach((info) => {
     const dictInfo = state.datastreamDict[info];
-    const graph = dictInfo?.properties?.graph === "bar" ? "bar" : "line";
+    const graph = UtilsGraph.getGraphType(dictInfo?.observedproperty, state.config.barObservedProperties);
     listNameSensor.push(dictInfo.sensor);
     listNameThing.push(dictInfo.thing);
     plotToDo[info] = {
@@ -861,7 +861,7 @@ async function downloadAndPlotPage(pageNum) {
     const data = pageCache[name] || [];
     const dictInfo = state.datastreamDict[name];
     const unit = `unité : ${dictInfo.unitOfMeasurement.name} (${dictInfo.unitOfMeasurement.symbol})`;
-    const graphType = dictInfo?.properties?.graph === "bar" ? "bar" : "line";
+    const graphType = UtilsGraph.getGraphType(dictInfo?.observedproperty, state.config.barObservedProperties);
     mergedData.push(data);
     labels.push(`${name} ${unit}`);
     state.seriesConfig[`${name} ${unit}`] =
@@ -936,7 +936,7 @@ async function plotGraph() {
     const selectedValues = getSelectedValues(elements.datastreamList);
     selectedValues.forEach((info) => {
       const dictInfo = state.datastreamDict[info];
-      const graph = dictInfo?.properties?.graph === "bar" ? "bar" : "line";
+      const graph = UtilsGraph.getGraphType(dictInfo?.observedproperty, state.config.barObservedProperties);
       listNameSensor.push(dictInfo.sensor);
       listNameThing.push(dictInfo.thing);
       plotToDo[info] = {
@@ -1154,7 +1154,8 @@ async function unzoomGraph(graph = null) {
       try {
         const dictInfo = state.datastreamDict[titre];
         const unit = `unité : ${dictInfo.unitOfMeasurement.name} (${dictInfo.unitOfMeasurement.symbol})`;
-        const graph = dictInfo?.properties?.graph === "bar" ? "bar" : "line";
+        const graph = UtilsGraph.getGraphType(dictInfo?.observedproperty, state.config.barObservedProperties);
+
 
         const { data, aggregation, limitReached } =
           await UtilsGraph.downloadObservations({
@@ -1245,7 +1246,7 @@ async function updateGraphZoom() {
       if (state.listAggregation[info] !== group) {
         state.listAggregation[info] = group;
 
-        const graph = dictInfo?.properties?.graph === "bar" ? "bar" : "line";
+        const graph = UtilsGraph.getGraphType(dictInfo?.observedproperty, state.config.barObservedProperties);
         const groupby = UtilsGraph.buildGroupByParam(group, graph);
         let url;
         if (groupby) {

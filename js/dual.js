@@ -568,7 +568,7 @@ async function plotGraph(serviceNum) {
     const selectedValues = getSelectedValues(elements.datastreamList);
     selectedValues.forEach((info) => {
       const dictInfo = state.datastreamDict[info];
-      const graph = dictInfo?.properties?.graph === "bar" ? "bar" : "line";
+      const graph = UtilsGraph.getGraphType(dictInfo?.observedproperty, state.config.barObservedProperties);
       listNameSensor.push(dictInfo.sensor);
       listNameThing.push(dictInfo.thing);
       const seriesKey = getSeriesKey(serviceNum, info);
@@ -893,7 +893,7 @@ async function updateGraphZoom() {
       if (sharedState.listAggregation[seriesKey] !== group) {
         sharedState.listAggregation[seriesKey] = group;
 
-        const graph = dictInfo?.properties?.graph === "bar" ? "bar" : "line";
+        const graph = UtilsGraph.getGraphType(dictInfo?.observedproperty, state.config.barObservedProperties);
         const groupby = UtilsGraph.buildGroupByParam(group, graph);
         let url;
         if (groupby) {

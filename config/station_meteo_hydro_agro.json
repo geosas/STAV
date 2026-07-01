@@ -4,5 +4,11 @@
     "mode": "Frost_Geosas",
     "metadata": "https://geosas.fr/geonetwork/srv/api/records/aff414a3-9213-4a08-a297-f4d72ea3f876",
     "description": "Données hydro-climatique de la station météo de l'Institut Agro Rennes Angers",
-    "metrology": true
+    "metrology": true,
+    "barObservedProperties": [
+        "Precipitation amount",
+        "Global Radiation",
+        "Reflected Radiation",
+        "Soil Heat Flux"
+    ]
 }

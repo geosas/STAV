@@ -66,7 +66,7 @@ async function createSensorTable() {
     const sensorsUrl = STAApi.buildQuery(state.config.urlService, "Sensors", {
       select: "name,description",
       expand:
-        "Datastreams($select=id,name,description,phenomenonTime,unitOfMeasurement,properties)",
+        "Datastreams($select=id,name,description,phenomenonTime,unitOfMeasurement,properties;$expand=ObservedProperty($select=name))",
     });
     const sensors = await STAApi.fetchSTA(sensorsUrl);
 
@@ -105,7 +105,8 @@ async function createSensorTable() {
         const parsedFirstDate = Utils.parseDate(start);
         const parsedLastDate = Utils.parseDate(end);
         const unitLabel = `${datastream.unitOfMeasurement?.name || ""} ${datastream.unitOfMeasurement?.symbol || ""}`;
-        const graphType = datastream.properties?.graph || "line";
+        const graphType = UtilsGraph.getGraphType(datastream.ObservedProperty?.name, state.config.barObservedProperties);
+
 
         sensorContent += `
                     <tr>

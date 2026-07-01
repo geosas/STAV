@@ -41,9 +41,11 @@ function _detectEntityType(url) {
  * @returns {Set<string>|null}
  */
 function _parseSelectFields(url) {
-  const match = url.match(/[?&]\$select=([^&]*)/i);
+
+  const match = url.match(/[?&](?:\$|%24)select=([^&]*)/i);
   if (!match) return null;
-  return new Set(match[1].split(",").map((f) => f.trim()));
+  return new Set(decodeURIComponent(match[1]).split(",").map((f) => f.trim()));
+
 }
 
 /**
