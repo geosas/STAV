@@ -7,10 +7,10 @@
 /**
 
 /**
-  * Déduit le fichier de config par défaut à partir du nom de la racine de montage.
-  * Ex: servi sous /sites-urbains-rennais/ -> config/sites-urbains-rennais.json.
-  * Permet d'ouvrir STAV sans ?config= quand la racine porte le nom de l'observatoire.
-  * @returns {string|null} URL du fichier de config, ou null (montage à la racine)
+  * Infers the default config file from the URL root name.
+  * Example: served under /stav-dev/ -> config/stav-dev.json.
+  * Allows STAV to be opened without ?config= when the root matches the observatory name.
+  * @returns {string|null} URL of the config file, or null (mounted at root)
   */
 import { BASE_URL } from "./utils.js";
 
