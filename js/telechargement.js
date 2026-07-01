@@ -1198,10 +1198,27 @@ async function unzoomGraph(graph = null) {
 
   targetGraph.updateOptions({ dateWindow: null, valueRange: null });
   document.getElementById("btn_zomm").style.display = "none";
-  plotGraph_internal();
+  state.dataZoomDict = {}; // Clear zoom data when unzooming
+
+  if (state.config.modeService === "Frost_Geosas" || filteredSeries.length > 0) {
+    // Aggregated zoom data (Frost-geosas) or freshly re-downloaded series need a full re-plot
+    plotGraph_internal();
+  } else {
+    // other mode: the full data is already loaded in the graph 
+    const statistique = UtilsGraph.calculStatGraph(
+      state.graph,
+      state.dictArgStat,
+    );
+    UtilsGraph.renderStatisticsTable(
+      selectedValues,
+      statistique,
+      document.getElementById("stat_agg"),
+      state.seriesData,
+      state.listAggregation,
+    );
+  }
   // if listAggregation empty  in mode frost_geosas next get will be with raw data
   state.listAggregation = { ...state.listAggregationResume };
-  state.dataZoomDict = {}; // Clear zoom data when unzooming
 }
 
 async function updateGraphZoom() {
@@ -1210,13 +1227,13 @@ async function updateGraphZoom() {
 
   state.isUpdatingZoom = true;
   state.zoom = true;
-  state.seriesConfig = {};
   const xRange = state.graph.xAxisRange();
   const selectedValues = getSelectedValues(elements.datastreamList);
 
   // Only download new data in Frost_Geosas mode (for aggregation changes)
   // In other modes, just use the already-downloaded data
   if (state.config.modeService === "Frost_Geosas") {
+    state.seriesConfig = {};
     elements.progressBar2.classList.remove("is-hidden");
 
     for (const info of selectedValues) {
@@ -1278,27 +1295,27 @@ async function updateGraphZoom() {
     }
 
     elements.progressBar2.classList.add("is-hidden");
+
+    // Rebuild the graph from the newly aggregated data, needed only in
+    // Frost_Geosas mode, where zooming can change the aggregation level.
+    const mergedData = [];
+    const labels = ["x"];
+    for (const key of selectedValues) {
+      const unit = state.seriesData[key].unit;
+      mergedData.push(state.dataZoomDict[key] || state.seriesData[key].data);
+      labels.push(key + " " + unit);
+      state.dictArgStat[key + " " + unit] = state.seriesData[key].graph;
+    }
+    const arrayFinal = UtilsGraph.mergeDataArrays(mergedData);
+
+    state.graph.updateOptions({
+      file: arrayFinal,
+      labels: labels,
+      dateWindow: xRange, // Keep the same zoom range
+    });
   }
 
-  // Update graph with current data (from dataZoomDict or seriesData)
-  const mergedData = [];
-  const labels = ["x"];
-  for (const key of selectedValues) {
-    const unit = state.seriesData[key].unit;
-    mergedData.push(state.dataZoomDict[key] || state.seriesData[key].data);
-    labels.push(key + " " + unit);
-    state.dictArgStat[key + " " + unit] = state.seriesData[key].graph;
-  }
-  const arrayFinal = UtilsGraph.mergeDataArrays(mergedData);
-
-  // Preserve the current zoom range to prevent triggering zoomCallback
-  state.graph.updateOptions({
-    file: arrayFinal,
-    labels: labels,
-    dateWindow: xRange, // Keep the same zoom range
-  });
-
-  // Calculate and display statistics
+  // Calculate and display statistics over the visible window (all modes)
   const statistique = UtilsGraph.calculStatGraph(
     state.graph,
     state.dictArgStat,
