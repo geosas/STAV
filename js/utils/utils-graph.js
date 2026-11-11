@@ -251,6 +251,221 @@ export async function downloadObservations(params) {
 }
 
 // ============================================================================
+// Outliers (gross errors) handling
+// ============================================================================
+
+/**
+ * A value is a gross error when the gap isolating it from the rest of the
+ * series is larger than OUTLIER_GAP_RATIO times the range of that rest.
+ * Tested on Beauregard: real extremes (storms, battery drops) stay below 2,
+ * sensor errors (-1018 mm of rain) are above 30.
+ */
+const OUTLIER_GAP_RATIO = 10;
+// Only the 5% most extreme values on each side can be flagged
+const OUTLIER_MAX_TAIL = 0.05;
+const OUTLIER_COLOR = "#d00000";
+
+// Per-graph state: {fences: Map(label -> {low, high}|null), rawFile, maskedFile, outliers, showAll, notice}
+const outlierState = new WeakMap();
+
+/**
+ * Computes the bounds outside which values of a series are gross errors.
+ * @param {ArrayLike<number>} values - Series values (null/NaN ignored)
+ * @returns {{low: number, high: number}|null} null if no outlier
+ */
+export function computeOutlierFences(values) {
+  // Float64Array: native numeric sort, much faster than Array.sort with a comparator
+  const buffer = new Float64Array(values.length);
+  let n = 0;
+  for (let k = 0; k < values.length; k++) {
+    if (Number.isFinite(values[k])) buffer[n++] = values[k];
+  }
+  if (n < 10) return null;
+  const sorted = buffer.subarray(0, n).sort();
+
+  const tail = Math.max(1, Math.floor(OUTLIER_MAX_TAIL * n));
+
+  // Largest gap in each tail: splits the candidate outliers from the core
+  let lowIdx = 1;
+  for (let i = 2; i <= tail; i++) {
+    if (sorted[i] - sorted[i - 1] > sorted[lowIdx] - sorted[lowIdx - 1]) lowIdx = i;
+  }
+  let highIdx = n - 2;
+  for (let j = n - 3; j >= n - 1 - tail; j--) {
+    if (sorted[j + 1] - sorted[j] > sorted[highIdx + 1] - sorted[highIdx]) highIdx = j;
+  }
+
+  const coreRange = sorted[highIdx] - sorted[lowIdx];
+  // Constant core (e.g. battery always 100%): no reference scale, flag nothing
+  if (!(coreRange > 0)) return null;
+
+  const lowGap = sorted[lowIdx] - sorted[lowIdx - 1];
+  const highGap = sorted[highIdx + 1] - sorted[highIdx];
+  const low = lowGap > OUTLIER_GAP_RATIO * coreRange
+    ? (sorted[lowIdx - 1] + sorted[lowIdx]) / 2
+    : -Infinity;
+  const high = highGap > OUTLIER_GAP_RATIO * coreRange
+    ? (sorted[highIdx] + sorted[highIdx + 1]) / 2
+    : Infinity;
+
+  return low === -Infinity && high === Infinity ? null : { low, high };
+}
+
+/**
+ * Tells if a value of a series is a gross error for this graph.
+ * @param {Dygraph} dygraph
+ * @param {string} label - Series label
+ * @param {number} value
+ * @returns {boolean}
+ */
+export function isOutlier(dygraph, label, value) {
+  const fences = outlierState.get(dygraph)?.fences.get(label);
+  return !!fences && Number.isFinite(value) && (value < fences.low || value > fences.high);
+}
+
+/**
+ * Computes the fences of each series of a new data array, then returns a copy
+ * where outliers are replaced by null (only the affected rows are copied).
+ * Fences are computed on unzoomed data only and reused while zoomed, so a zoomed
+ * window (where a storm can dwarf a few zeros) never creates new outliers.
+ */
+function _maskOutliers(state, file, labels, zoomed) {
+  if (!zoomed) state.fences = new Map();
+
+  const fenced = [];
+  labels.slice(1).forEach((label, s) => {
+    const col = s + 1;
+    if (!state.fences.has(label)) {
+      const values = new Float64Array(file.length);
+      for (let r = 0; r < file.length; r++) {
+        const y = file[r][col];
+        values[r] = y == null ? NaN : y;
+      }
+      state.fences.set(label, computeOutlierFences(values));
+    }
+    const fences = state.fences.get(label);
+    if (fences) fenced.push({ label, col, ...fences });
+  });
+
+  state.outliers = [];
+  if (fenced.length === 0) return file;
+
+  let masked = null;
+  for (let r = 0; r < file.length; r++) {
+    const row = file[r];
+    let newRow = null;
+    for (const { label, col, low, high } of fenced) {
+      const y = row[col];
+      if (Number.isFinite(y) && (y < low || y > high)) {
+        newRow ??= row.slice();
+        newRow[col] = null;
+        state.outliers.push({ label, x: +row[0], y });
+      }
+    }
+    if (newRow) {
+      masked ??= file.slice();
+      masked[r] = newRow;
+    }
+  }
+  return masked ?? file;
+}
+
+/**
+ * Draws a red arrow on the top/bottom edge for each hidden outlier (drawCallback).
+ */
+function _drawOutlierMarkers(g) {
+  const state = outlierState.get(g);
+  if (!state || state.showAll || state.outliers.length === 0) return;
+
+  // hidden_ctx_ is the plot canvas (same one given to underlayCallback)
+  const ctx = g.hidden_ctx_;
+  const area = g.getArea();
+  const [ymin, ymax] = g.yAxisRange();
+  ctx.save();
+  ctx.fillStyle = OUTLIER_COLOR;
+  for (const { x, y } of state.outliers) {
+    const px = g.toDomXCoord(x);
+    if (px < area.x || px > area.x + area.w) continue;
+    const edge = y > ymax ? area.y : y < ymin ? area.y + area.h : null;
+    if (edge === null) continue;
+    const dir = y > ymax ? 1 : -1;
+    ctx.beginPath();
+    ctx.moveTo(px, edge);
+    ctx.lineTo(px - 5, edge + 9 * dir);
+    ctx.lineTo(px + 5, edge + 9 * dir);
+    ctx.fill();
+  }
+  ctx.restore();
+}
+
+/**
+ * Shows/updates the message above the graph listing the hidden outliers.
+ */
+function _renderOutlierNotice(state, toggle) {
+  const { notice, outliers } = state;
+  if (outliers.length === 0) {
+    notice.style.display = "none";
+    return;
+  }
+
+  // Series names only (telechargement labels end with " unité : ...")
+  const names = [...new Set(outliers.map(({ label }) => label.split(" unité :")[0]))];
+  const text = state.showAll
+    ? "Valeurs aberrantes affichées (toujours exclues des statistiques)."
+    : `⚠️ ${outliers.length} valeur(s) aberrante(s) hors échelle, signalée(s) par ▲▼ et exclue(s) des statistiques : ${names.map(escapeHtml).join(", ")}`;
+
+  notice.style.display = "";
+  notice.innerHTML = `
+    ${text}
+    <label class="checkbox" style="margin-left: 8px">
+      <input type="checkbox" ${state.showAll ? "checked" : ""}> Afficher toute l'échelle
+    </label>`;
+  notice.querySelector("input").addEventListener("change", (e) => toggle(e.target.checked));
+}
+
+/**
+ * Wraps graph.updateOptions so every new data array is filtered before the
+ * (single) draw: Dygraph then autoscales the y axis on clean data by itself.
+ */
+function _installOutlierFilter(g, graphDiv) {
+  const notice = document.createElement("div");
+  notice.className = "is-size-7 has-text-danger";
+  notice.style.margin = "4px 0";
+  notice.style.display = "none";
+  graphDiv.insertAdjacentElement("beforebegin", notice);
+
+  const state = {
+    fences: new Map(),
+    rawFile: null,
+    maskedFile: null,
+    outliers: [],
+    showAll: false,
+    notice,
+  };
+  outlierState.set(g, state);
+
+  const originalUpdate = g.updateOptions.bind(g);
+
+  const toggle = (showAll) => {
+    state.showAll = showAll;
+    originalUpdate({ file: showAll ? state.rawFile : state.maskedFile });
+    _renderOutlierNotice(state, toggle);
+  };
+
+  g.updateOptions = (options, blockRedraw) => {
+    if (options && Array.isArray(options.file)) {
+      const labels = options.labels ?? g.getLabels();
+      const zoomed = options.dateWindow !== undefined ? options.dateWindow != null : g.isZoomed("x");
+      state.rawFile = options.file;
+      state.maskedFile = _maskOutliers(state, options.file, labels, zoomed);
+      options = { ...options, file: state.showAll ? state.rawFile : state.maskedFile };
+      _renderOutlierNotice(state, toggle);
+    }
+    return originalUpdate(options, blockRedraw);
+  };
+}
+
+// ============================================================================
 // Dygraph helpers
 // ============================================================================
 
@@ -289,14 +504,17 @@ export function createThresholdCallback(thresholds) {
  * @returns {Dygraph} Configured Dygraph instance
  */
 export function createDygraph(graphDiv, legendDiv, extraOptions = {}) {
-  return new Dygraph(graphDiv, [], {
+  const graph = new Dygraph(graphDiv, [], {
     drawPoints: true,
     connectSeparatedPoints: true,
     digitsAfterDecimal: 3,
     legend: "always",
     labelsDiv: legendDiv,
+    drawCallback: _drawOutlierMarkers,
     ...extraOptions,
   });
+  _installOutlierFilter(graph, graphDiv);
+  return graph;
 }
 
 // ============================================================================
@@ -341,7 +559,7 @@ export function calculStatGraph(dygraph, seriesTypeDict) {
     if (x >= xmin && x <= xmax) {
       series.forEach((_, index) => {
         const y = row[index + 1];
-        if (y !== null && !isNaN(y)) {
+        if (y !== null && !isNaN(y) && !isOutlier(dygraph, series[index], y)) {
           sums[index] += y;
           counts[index]++;
         }
