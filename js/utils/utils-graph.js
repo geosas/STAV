@@ -424,10 +424,11 @@ function _renderOutlierNotice(state, toggle) {
 }
 
 /**
- * Wraps graph.updateOptions so every new data array is filtered before the
- * (single) draw: Dygraph then autoscales the y axis on clean data by itself.
+ * Wraps graph.updateOptions so every new data array is prepared before the
+ * (single) draw: gaps are broken, then outliers are masked so Dygraph
+ * autoscales the y axis on clean data by itself.
  */
-function _installOutlierFilter(g, graphDiv) {
+function _installDataFilter(g, graphDiv) {
   const notice = document.createElement("div");
   notice.className = "is-size-7 has-text-danger";
   notice.style.margin = "4px 0";
@@ -456,13 +457,71 @@ function _installOutlierFilter(g, graphDiv) {
     if (options && Array.isArray(options.file)) {
       const labels = options.labels ?? g.getLabels();
       const zoomed = options.dateWindow !== undefined ? options.dateWindow != null : g.isZoomed("x");
-      state.rawFile = options.file;
-      state.maskedFile = _maskOutliers(state, options.file, labels, zoomed);
+      state.rawFile = breakGaps(options.file, labels.length - 1);
+      state.maskedFile = _maskOutliers(state, state.rawFile, labels, zoomed);
       options = { ...options, file: state.showAll ? state.rawFile : state.maskedFile };
       _renderOutlierNotice(state, toggle);
     }
     return originalUpdate(options, blockRedraw);
   };
+}
+
+// ============================================================================
+// Gaps (periods without data)
+// ============================================================================
+
+/**
+ * A gap is a time step larger than GAP_FACTOR times the usual (median) step
+ * of the series: 10 days without data in a daily series, 100 min in a 10 min one.
+ */
+const GAP_FACTOR = 10;
+
+/**
+ * Inserts a NaN row in the middle of each gap of each series so the line is
+ * broken there. connectSeparatedPoints (needed for merged multi-series data)
+ * makes Dygraph skip null values, but it always breaks the line on NaN.
+ * @param {Array<Array>} file - Dygraph data [[Date, v1, v2, ...], ...] sorted by date
+ * @param {number} nSeries - Number of series (columns after the date)
+ * @returns {Array<Array>} The same array if no gap, else a copy with the break rows
+ */
+export function breakGaps(file, nSeries) {
+  const breaks = []; // [time, column]
+  const times = new Float64Array(file.length);
+
+  for (let col = 1; col <= nSeries; col++) {
+    let n = 0;
+    for (const row of file) {
+      if (Number.isFinite(row[col])) times[n++] = +row[0];
+    }
+    if (n < 3) continue;
+
+    const steps = new Float64Array(n - 1);
+    for (let k = 1; k < n; k++) steps[k - 1] = times[k] - times[k - 1];
+    const median = steps.slice().sort()[(n - 1) >> 1];
+    if (!(median > 0)) continue;
+
+    for (let k = 0; k < n - 1; k++) {
+      if (steps[k] > GAP_FACTOR * median) breaks.push([times[k] + steps[k] / 2, col]);
+    }
+  }
+  if (breaks.length === 0) return file;
+
+  breaks.sort((a, b) => a[0] - b[0]);
+  const breakRow = ([time, col]) => {
+    const row = new Array(nSeries + 1).fill(null);
+    row[0] = new Date(time);
+    row[col] = NaN;
+    return row;
+  };
+
+  const result = [];
+  let b = 0;
+  for (const row of file) {
+    while (b < breaks.length && breaks[b][0] < +row[0]) result.push(breakRow(breaks[b++]));
+    result.push(row);
+  }
+  while (b < breaks.length) result.push(breakRow(breaks[b++]));
+  return result;
 }
 
 // ============================================================================
@@ -513,7 +572,7 @@ export function createDygraph(graphDiv, legendDiv, extraOptions = {}) {
     drawCallback: _drawOutlierMarkers,
     ...extraOptions,
   });
-  _installOutlierFilter(graph, graphDiv);
+  _installDataFilter(graph, graphDiv);
   return graph;
 }
 
