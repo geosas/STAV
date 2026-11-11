@@ -4,6 +4,9 @@
  * for differents formats) for SensorThings API
  */
 
+import { waitForAppReady } from "./app-init.js";
+import { escapeHtml } from "./utils.js";
+
 const MISSING = "CHAMP OBLIGATOIRE MANQUANT";
 
 const MANDATORY_FIELDS = {
@@ -15,6 +18,64 @@ const MANDATORY_FIELDS = {
   Observations: ["phenomenonTime", "result"],
   FeaturesOfInterest: ["name", "description", "encodingType", "feature"],
 };
+
+let serverDownNotified = false;
+
+/**
+ * Displays a persistent message saying the SensorThings server does not respond,
+ * with a link to the metadata record (if configured) to contact the resource person.
+ * Shown only once per page to avoid stacking messages from parallel requests.
+ * @param {string} url - URL that failed
+ */
+async function _notifyServerUnreachable(url) {
+  if (serverDownNotified) return;
+  serverDownNotified = true;
+
+  let metadata = null;
+  try {
+    metadata = (await waitForAppReady())?.metadata || null;
+  } catch (error) {
+    console.warn("Unable to read metadata from configuration:", error);
+  }
+
+  const server = new URL(url).origin;
+  const contact = metadata
+    ? `<br>Vous pouvez contacter la personne ressource indiquée dans la
+       <a href="${escapeHtml(metadata)}" target="_blank" rel="noopener">fiche de métadonnée</a>.`
+    : "";
+
+  const notification = document.createElement("div");
+  notification.className = "notification is-danger";
+  notification.style.position = "fixed";
+  notification.style.top = "20px";
+  notification.style.right = "20px";
+  notification.style.zIndex = "9999";
+  notification.style.maxWidth = "450px";
+  notification.innerHTML = `
+    <button class="delete" aria-label="Fermer"></button>
+    Le serveur SensorThings (${escapeHtml(server)}) ne répond pas.${contact}
+  `;
+  notification.querySelector(".delete").addEventListener("click", () => notification.remove());
+  document.body.appendChild(notification);
+}
+
+/**
+ * fetch() wrapper: warns the user when the server is unreachable
+ * (network error) or failing (HTTP 5xx), then behaves like fetch()
+ * @param {string} url
+ * @returns {Promise<Response>}
+ */
+async function _fetchWithServerCheck(url) {
+  let response;
+  try {
+    response = await fetch(url);
+  } catch (error) {
+    if (error.name !== "AbortError") _notifyServerUnreachable(url);
+    throw error;
+  }
+  if (response.status >= 500) _notifyServerUnreachable(url);
+  return response;
+}
 
 /**
  * Detects the SensorThings entity type from a URL path
@@ -139,7 +200,7 @@ async function _fetchDataArray(url, maxRecords = null) {
       nextLink &&
       (maxRecords === null || allDataArrays.length < maxRecords)
     ) {
-      const response = await fetch(nextLink);
+      const response = await _fetchWithServerCheck(nextLink);
 
       if (!response.ok) {
         throw new Error(`HTTP ${response.status}: ${response.statusText}`);
@@ -218,7 +279,7 @@ async function fetchSTA(url, options = {}) {
     url.includes("%24resultFormat=csv")
   ) {
     try {
-      const response = await fetch(url);
+      const response = await _fetchWithServerCheck(url);
       if (!response.ok) {
         throw new Error(`HTTP ${response.status}: ${response.statusText}`);
       }
@@ -237,7 +298,7 @@ async function fetchSTA(url, options = {}) {
 
   try {
     do {
-      const response = await fetch(currentUrl);
+      const response = await _fetchWithServerCheck(currentUrl);
 
       if (!response.ok) {
         throw new Error(`HTTP ${response.status}: ${response.statusText}`);
@@ -278,7 +339,7 @@ async function getCount(baseUrl, entity, filter = "") {
     filter: filter || undefined,
   });
   try {
-    const response = await fetch(url);
+    const response = await _fetchWithServerCheck(url);
 
     if (!response.ok) {
       throw new Error(`HTTP ${response.status}: ${response.statusText}`);
