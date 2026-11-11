@@ -26,8 +26,6 @@ const state = {
   thingDict: {},
   datastreamsToShow: [],
   datastreamListInter: [],
-  sensorCheck: false,
-  thingCheck: false,
   listAggregation: {},
   listAggregationResume: {},
   dataZoomDict: {},
@@ -380,13 +378,15 @@ function filterDatastreamsBySensorOrThing(selectedItems, key) {
   const otherList = key === "sensor" ? elements.thingList : elements.sensorList;
   const otherCallback =
     key === "sensor" ? updateDatastreamFromThing : updateDatastreamFromSensor;
+  // The other filter is active only if one of its boxes is really checked
+  // (a flag kept in state stayed true after the lists were cleared by an ObservedProperty change)
+  const otherSelected = getSelectedValues(otherList);
+  const otherActive = otherSelected.length > 0;
   let visibleDatastreams;
 
   if (selectedItems.length === 0) {
-    state[key + "Check"] = false;
     // Apply the other filter if it's active
-    if (state[otherKey + "Check"]) {
-      const otherSelected = getSelectedValues(otherList);
+    if (otherActive) {
       visibleDatastreams = state.datastreamsToShow.filter(
         (ds) =>
           state.datastreamDict[ds] &&
@@ -396,14 +396,12 @@ function filterDatastreamsBySensorOrThing(selectedItems, key) {
       visibleDatastreams = state.datastreamsToShow;
     }
   } else {
-    state[key + "Check"] = true;
-    const otherSelected = getSelectedValues(otherList);
     visibleDatastreams = [];
     for (const datastream in state.datastreamDict) {
       if (
         state.datastreamsToShow.includes(datastream) &&
         selectedItems.includes(state.datastreamDict[datastream][key]) &&
-        (!state[otherKey + "Check"] ||
+        (!otherActive ||
           otherSelected.includes(state.datastreamDict[datastream][otherKey]))
       ) {
         visibleDatastreams.push(datastream);
@@ -417,7 +415,7 @@ function filterDatastreamsBySensorOrThing(selectedItems, key) {
   });
 
   // Rebuild other list if it's not actively filtered
-  if (!state[otherKey + "Check"]) {
+  if (!otherActive) {
     clearList(otherList);
     const objectsToShow = new Set();
     visibleDatastreams.forEach((datastream) => {
